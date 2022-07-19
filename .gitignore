@@ -1,5 +1,5 @@
-.png
-.jpeg
-.jpg
-.txt
-.log
+*.png
+*.jpeg
+*.jpg
+*.txt
+*.log
