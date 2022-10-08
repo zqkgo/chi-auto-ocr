@@ -31,7 +31,7 @@ func main() {
 			ext := filepath.Ext(path)
 			if ext == ".png" || ext == ".jpeg" || ext == ".jpg" {
 				cnt++
-				cmd := exec.Command("tesseract", path, fmt.Sprintf("%d", cnt), "-l", "chi_sim", "-c", "preserve_interword_spaces=1")
+				cmd := exec.Command("tesseract", path, fmt.Sprintf("%d", cnt), "-l", "chi_sim+eng", "-c", "preserve_interword_spaces=1")
 				err := cmd.Run()
 				if err != nil {
 					log.Printf("failed to run tesseract, err: %+v\n", err)
