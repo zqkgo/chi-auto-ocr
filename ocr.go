@@ -112,6 +112,7 @@ func clearNewLine(filePath string) {
 		log.Printf("failed to read file %s, err: %v", filePath, err)
 	}
 	newContent := strings.Replace(string(bs), "\n", "", -1)
+	newContent = strings.TrimSpace(newContent)
 	err = os.Truncate(filePath, 0)
 	if err != nil {
 		log.Printf("failed to truncate file %s, err: %v", filePath, err)
