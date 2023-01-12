@@ -35,7 +35,7 @@ func main() {
 			}
 			ext := filepath.Ext(path)
 			if ext == ".png" || ext == ".jpeg" || ext == ".jpg" {
-				allInOneMarkdownOCR(path)
+				allInOneMkdOCR(path)
 				handled[path] = true
 			}
 			return nil

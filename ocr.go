@@ -5,6 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
+	"math/rand"
 	"net/url"
 	"os"
 	"os/exec"
@@ -12,38 +14,25 @@ import (
 	"strings"
 )
 
-var cnt int
-
-func extSupported(filePath string) bool {
-	ext := filepath.Ext(filePath)
-	if ext == ".png" || ext == ".jpeg" || ext == ".jpg" {
-		return true
-	}
-	return false
-}
-
 // allInOneMarkdownOCR put all text content in one large markdown formatted file.
-func allInOneMarkdownOCR(filePath string) {
-	if !extSupported(filePath) {
+func allInOneMkdOCR(imgPath string) {
+	if !extSupported(imgPath) {
 		log.Printf("extension not supported")
 		return
 	}
 
 	// convert the image
-	cnt++
-	out := fmt.Sprintf("%d", cnt)
-	cmd := exec.Command("tesseract", filePath, out, "-l", "chi_sim+eng", "-c", "preserve_interword_spaces=1")
-	err := cmd.Run()
-	if err != nil {
-		log.Printf("failed to run tesseract, err: %+v\n", err)
-	}
-	outFile := fmt.Sprintf("%s.txt", out)
+	outFile, err := ocr(imgPath)
 	defer func() {
 		err := os.Remove(outFile)
 		if err != nil {
 			log.Printf("failed to remove file '%s', err: %v", outFile, err)
 		}
 	}()
+	if err != nil {
+		log.Fatalf("failed to exec ocr, err: %v", err)
+		return
+	}
 
 	// clear \n
 	clearNewLine(outFile)
@@ -61,6 +50,7 @@ func allInOneMarkdownOCR(filePath string) {
 		of.Close()
 	}
 	text := string(bs)
+	text = splitLines(text)
 
 	// open the large markdown file
 	f, err := os.OpenFile("ocr.md", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
@@ -70,7 +60,7 @@ func allInOneMarkdownOCR(filePath string) {
 	defer f.Close()
 
 	// append the image and text
-	imgLine := fmt.Sprintf("\n![](%s)\n", url.PathEscape(filePath))
+	imgLine := fmt.Sprintf("\n![](%s)\n", url.PathEscape(imgPath))
 	_, err = f.WriteString(imgLine)
 	if err != nil {
 		log.Printf("failed to write image line, err: %v", err)
@@ -82,23 +72,42 @@ func allInOneMarkdownOCR(filePath string) {
 	}
 }
 
-// separateOCR put text content in a separate file for each image.
-func separateOCR(filePath string) {
-	if !extSupported(filePath) {
-		log.Printf("extension not supported")
-		return
+func extSupported(filePath string) bool {
+	ext := filepath.Ext(filePath)
+	if ext == ".png" || ext == ".jpeg" || ext == ".jpg" {
+		return true
 	}
+	return false
+}
 
-	cnt++
-	cmd := exec.Command("tesseract", filePath, fmt.Sprintf("%d", cnt), "-l", "chi_sim+eng", "-c", "preserve_interword_spaces=1")
-	err := cmd.Run()
+func ocr(imgPath string) (out string, err error) {
+	out = fmt.Sprintf("%d", rand.Intn(math.MaxInt64))
+	cmd := exec.Command("tesseract", imgPath, out, "-l", "chi_sim+eng", "-c", "preserve_interword_spaces=1")
+	err = cmd.Run()
 	if err != nil {
 		log.Printf("failed to run tesseract, err: %+v\n", err)
+		return
 	}
+	out = fmt.Sprintf("%s.txt", out)
+	return
+}
 
-	// clear \n
-	outFile := fmt.Sprintf("%d.txt", cnt)
-	clearNewLine(outFile)
+func splitLines(txt string) string {
+	sep := "。"
+	if !strings.Contains(txt, sep) {
+		sep = "."
+	}
+	lines := strings.Split(txt, sep)
+	txt = ""
+	for _, l := range lines {
+		l = strings.TrimSpace(l)
+		if len(l) == 0 {
+			continue
+		}
+		txt += l + sep
+		txt += "\n\n"
+	}
+	return strings.TrimRight(txt, "\n")
 }
 
 func clearNewLine(filePath string) {
