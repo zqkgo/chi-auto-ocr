@@ -2,4 +2,4 @@
 
 A program aiming at automatically transfer Chinese/English snapshot to plain text file. 
 
-![](./assets/ss.png)
+![](./assets/demo.png)

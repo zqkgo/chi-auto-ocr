@@ -17,4 +17,16 @@ func TestSplitLines(t *testing.T) {
 	txt = splitLines(txt)
 	lines = strings.Split(txt, "\n\n")
 	require.Equal(t, 4, len(lines))
+
+	txt = ""
+	txt = splitLines(txt)
+	require.Empty(t, txt)
+
+	txt = "床前明月光"
+	txt = splitLines(txt)
+	require.NotEmpty(t, txt)
+
+	txt = "低头思故乡。"
+	txt2 := splitLines(txt)
+	require.Equal(t, txt, txt2)
 }
