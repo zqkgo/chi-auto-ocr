@@ -30,7 +30,7 @@ func allInOneMkdOCR(imgPath string) {
 		}
 	}()
 	if err != nil {
-		log.Fatalf("failed to exec ocr, err: %v", err)
+		log.Printf("failed to exec ocr, err: %v", err)
 		return
 	}
 
