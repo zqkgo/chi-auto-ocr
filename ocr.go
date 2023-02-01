@@ -80,15 +80,15 @@ func extSupported(filePath string) bool {
 	return false
 }
 
-func ocr(imgPath string) (out string, err error) {
-	out = fmt.Sprintf("%d", rand.Intn(math.MaxInt64))
+func ocr(imgPath string) (outFile string, err error) {
+	out := fmt.Sprintf("%d", rand.Intn(math.MaxInt64))
+	outFile = fmt.Sprintf("%s.txt", out)
 	cmd := exec.Command("tesseract", imgPath, out, "-l", "chi_sim+eng", "-c", "preserve_interword_spaces=1")
 	err = cmd.Run()
 	if err != nil {
 		log.Printf("failed to run tesseract, err: %+v\n", err)
 		return
 	}
-	out = fmt.Sprintf("%s.txt", out)
 	return
 }
 
