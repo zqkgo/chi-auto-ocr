@@ -7,7 +7,6 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -50,7 +49,7 @@ func allInOneMkdOCR(imgPath string) {
 		of.Close()
 	}
 	text := string(bs)
-	text = splitLines(text)
+	text = splitLinesMdFmt(text)
 
 	// open the large markdown file
 	f, err := os.OpenFile("ocr.md", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
@@ -60,11 +59,11 @@ func allInOneMkdOCR(imgPath string) {
 	defer f.Close()
 
 	// append the image and text
-	imgLine := fmt.Sprintf("\n![](%s)\n", url.PathEscape(imgPath))
-	_, err = f.WriteString(imgLine)
-	if err != nil {
-		log.Printf("failed to write image line, err: %v", err)
-	}
+	// imgLine := fmt.Sprintf("\n![](%s)\n", url.PathEscape(imgPath))
+	// _, err = f.WriteString(imgLine)
+	// if err != nil {
+	// 	log.Printf("failed to write image line, err: %v", err)
+	// }
 	txtLine := fmt.Sprintf("\n%s\n", text)
 	_, err = f.WriteString(txtLine)
 	if err != nil {
@@ -92,6 +91,26 @@ func ocr(imgPath string) (outFile string, err error) {
 	return
 }
 
+// md 格式的行。
+func splitLinesMdFmt(txt string) string {
+	sep := "。"
+	if !strings.Contains(txt, sep) {
+		sep = "."
+	}
+	lines := strings.Split(txt, sep)
+	txt = ""
+	for _, l := range lines {
+		l = strings.TrimSpace(l)
+		if len(l) == 0 {
+			continue
+		}
+		txt += "- " + l + sep
+		txt += "\n"
+	}
+	return strings.TrimRight(txt, "\n")
+}
+
+// 文本格式的行。
 func splitLines(txt string) string {
 	sep := "。"
 	if !strings.Contains(txt, sep) {
